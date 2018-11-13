@@ -1,0 +1,38 @@
+.MMM-OpenmapWeather .weathericon,
+.MMM-OpenmapWeather .fa-home {
+  font-size: 75%;
+  line-height: 65px;
+  display: inline-block;
+  -ms-transform: translate(0, -3px); /* IE 9 */
+  -webkit-transform: translate(0, -3px); /* Safari */
+  transform: translate(0, -3px);
+}
+
+.MMM-OpenmapWeather .humidityIcon {
+  padding-right: 4px;
+}
+
+.MMM-OpenmapWeather .humidity-padding {
+  padding-bottom: 6px;
+}
+
+.MMM-OpenmapWeather .currentWeatherIcon {
+  font-size: 75%;
+  line-height: 45px;
+  display: inline-block;
+  -ms-transform: translate(0, -3px); /* IE 9 */
+  -webkit-transform: translate(0, -3px); /* Safari */
+  transform: translate(0, -3px);
+  width: 40%;
+  height: 40%;
+} 
+.MMM-OpenmapWeather .currentWeatherIconWrapper .currentWeatherIcon {
+  max-width: 140px;
+  max-height: 140px;
+  width: auto;
+  height: auto;
+  margin:0;
+  vertical-align:top;
+  -webkit-transform: none;
+  transform: none;
+}
