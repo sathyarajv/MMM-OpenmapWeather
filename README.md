@@ -2,13 +2,20 @@
 This module is an updated version with appropriate image to display current weather condition using Openmap weather API.
 This module displays the current weather, including the windspeed, the sunset or sunrise time, the temperature and an color icon as image to display the current conditions.
 
+Note: MMM-OpenmapWeather is a modified version of the default `currentweather` module.
+
+## Installing the module
+Clone this repository in your `~/MagicMirror/modules/` folder `( $ cd ~MagicMirror/modules/ )`:
+````javascript
+git clone https://github.com/sathyarajv/MMM-OpenmapWeather.git
+````
 ## Using the module
 
 To use this module, add it to the modules array in the `config/config.js` file:
 ````javascript
 modules: [
 	{
-		module: "currentweather",
+		module: "MMM-OpenmapWeather",
 		position: "top_left",	// This can be any of the regions.
 									// Best results in left or right regions.
 		config: {
@@ -60,4 +67,3 @@ The following properties can be configured:
 | `iconTable`                  | The conversion table to convert the weather conditions to weather-icons. <br><br> **Default value:**  view tabel below.
 | `colorIcon`                  | If set to `true`, then the current weather displayed as color image else it will display as an icon. <br><br> **Default value:** `false`
 
-````
