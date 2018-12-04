@@ -1,4 +1,4 @@
-/* global Module */
+use strict;
 
 /* Magic Mirror
  * Module: MMM-OpenmapWeather
@@ -475,7 +475,7 @@ Module.register("MMM-OpenmapWeather",{
 		this.windDeg = data.wind.deg;
 		this.weatherType = this.config.iconTable[data.weather[0].icon];
 		this.weatherTypeTxt = "<img src='./modules/MMM-OpenmapWeather/img/" +
-		   this.config.iconImageTable[data.weather[0].icon]+'.png') +
+		   this.config.iconImageTable[data.weather[0].icon] +
           "' style='vertical-align:middle' class='currentWeatherIcon'>";
 
 		var now = new Date();
