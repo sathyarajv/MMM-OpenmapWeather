@@ -4,6 +4,8 @@ This module displays the current weather, including the windspeed, the sunset or
 
 Note: MMM-OpenmapWeather is a modified version of the default `currentweather` module.
 
+![Screenshot](https://raw.githubusercontent.com/sathyarajv/MMM-OpenmapWeather/master/MMM-OpenmapWeather-display.png)
+
 ## Installing the module
 Clone this repository in your `~/MagicMirror/modules/` folder `( $ cd ~MagicMirror/modules/ )`:
 ````javascript
