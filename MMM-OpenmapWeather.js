@@ -1,4 +1,4 @@
-use strict;
+'use strict';
 
 /* Magic Mirror
  * Module: MMM-OpenmapWeather
