@@ -92,7 +92,7 @@ Module.register("MMM-OpenmapWeather",{
 	firstEvent: false,
 
 	// create a variable to hold the location name based on the API result.
-	fetchedLocatioName: "",
+	fetchedLocationName: "",
 
 	// Define required scripts.
 	getScripts: function() {
@@ -288,8 +288,8 @@ Module.register("MMM-OpenmapWeather",{
 
 	// Override getHeader method.
 	getHeader: function() {
-		if (this.config.appendLocationNameToHeader) {
-			return this.data.header + " " + this.fetchedLocatioName;
+		if (this.config.appendLocationNameToHeader && this.data.header !== undefined) {
+			return this.data.header + " " + this.fetchedLocationName;
 		}
 
 		return this.data.header;
@@ -407,7 +407,7 @@ Module.register("MMM-OpenmapWeather",{
 		this.humidity = parseFloat(data.main.humidity);
 		this.temperature = this.roundValue(data.main.temp);
 		this.feelsLike = 0;
-
+		this.fetchedLocationName=data.name+','+data.sys.country;
 		if (this.config.useBeaufort){
 			this.windSpeed = this.ms2Beaufort(this.roundValue(data.wind.speed));
 		} else if (this.config.useKMPHwind) {
