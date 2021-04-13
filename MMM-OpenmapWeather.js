@@ -5,6 +5,8 @@
  *
  * By Sathyaraj V
  * MIT Licensed.
+  
+																			  
  */
 
 Module.register("MMM-OpenmapWeather",{
@@ -27,7 +29,8 @@ Module.register("MMM-OpenmapWeather",{
 		lang: config.language,
 		decimalSymbol: ".",
 		showHumidity: false,
-		degreeLabel: false,
+		showSun: true,
+		degreeLabel: true,
 		showIndoorTemperature: false,
 		showIndoorHumidity: false,
 		showFeelsLike: true,
@@ -40,10 +43,15 @@ Module.register("MMM-OpenmapWeather",{
 		weatherEndpoint: "weather",
 
 		appendLocationNameToHeader: true,
+		useLocationAsHeader: false,
+
 		calendarClass: "calendar",
+		tableClass: "large",
 
 		onlyTemp: false,
+		hideTemp: false,
 		roundTemp: false,
+
         
 		colorIcon: false,
 		iconTable: {
@@ -83,8 +91,8 @@ Module.register("MMM-OpenmapWeather",{
 			"09n": "nt_sleet.png",
 			"10n": "nt_rain.png",
 			"11n": "nt_tstorms.png",
-			"13n": "nt_snow.png"
-			//,"50n": "wi-night-alt-cloudy-windy"
+			"13n": "nt_snow.png",
+			"50n": "nt-alt-cloudy-windy.png"
 		},
 	},
 
@@ -153,7 +161,7 @@ Module.register("MMM-OpenmapWeather",{
 			var windDirection = document.createElement("sup");
 			if (this.config.showWindDirectionAsArrow) {
 				if(this.windDeg !== null) {
-					windDirection.innerHTML = " &nbsp;<i class=\"fa fa-long-arrow-down\" style=\"transform:rotate("+this.windDeg+"deg);\"></i>&nbsp;";
+					windDirection.innerHTML = ' &nbsp;<i class="fa fa-long-arrow-down" style="transform:rotate('+this.windDeg+'deg);"></i>&nbsp;';
 				}
 			} else {
 				windDirection.innerHTML = " " + this.translate(this.windDirection);
@@ -180,6 +188,7 @@ Module.register("MMM-OpenmapWeather",{
 			small.appendChild(humidityIcon);
 		}
 
+	if (this.config.showSun) {				
 		var sunriseSunsetIcon = document.createElement("span");
 		sunriseSunsetIcon.className = "wi dimmed " + this.sunriseSunsetIcon;
 		small.appendChild(sunriseSunsetIcon);
@@ -187,6 +196,7 @@ Module.register("MMM-OpenmapWeather",{
 		var sunriseSunsetTime = document.createElement("span");
 		sunriseSunsetTime.innerHTML = " " + this.sunriseSunsetTime;
 		small.appendChild(sunriseSunsetTime);
+   	}
 
 		wrapper.appendChild(small);
 	},
@@ -194,6 +204,7 @@ Module.register("MMM-OpenmapWeather",{
 	// Override dom generator.
 	getDom: function() {
 		var wrapper = document.createElement("div");
+	    wrapper.className = this.config.tableClass;						 
 
 		if (this.config.appid === "") {
 			wrapper.innerHTML = "Please set the correct openweather <i>appid</i> in the config for module: " + this.name + ".";
@@ -214,26 +225,24 @@ Module.register("MMM-OpenmapWeather",{
 		var large = document.createElement("div");
 		large.className = "large light";
 
-		var weatherIcon = document.createElement("span");
-		if(this.config.colorIcon){
-		    weatherIcon.innerHTML = this.weatherTypeTxt;
-		}else{
-			weatherIcon.className = "wi weathericon " + this.weatherType;
-		}
-		weatherIcon.classList.add("currentWeatherIconWrapper");
-		large.appendChild(weatherIcon);
-
+		
 		var degreeLabel = "";
+		if (this.config.units === "metric" || this.config.units === "imperial") {
+			degreeLabel += "°";
+		
+																
+		}
+			
 		if (this.config.degreeLabel) {
 			switch (this.config.units ) {
 			case "metric":
-				degreeLabel = "C";
+				degreeLabel += "C";
 				break;
 			case "imperial":
-				degreeLabel = "F";
+				degreeLabel += "F";
 				break;
 			case "default":
-				degreeLabel = "K";
+				degreeLabel += "K";
 				break;
 			}
 		}
@@ -242,10 +251,25 @@ Module.register("MMM-OpenmapWeather",{
 			this.config.decimalSymbol = ".";
 		}
 
+		if (this.config.hideTemp === false) {
+		var weatherIcon = document.createElement("span");
+		if(this.config.colorIcon){
+		    weatherIcon.innerHTML = this.weatherTypeTxt;
+		}else{
+			weatherIcon.className = "wi weathericon " + this.weatherType;
+													
+									
+																										
+								  
+		}
+		weatherIcon.classList.add("currentWeatherIconWrapper");
+		large.appendChild(weatherIcon);
+					
 		var temperature = document.createElement("span");
 		temperature.className = "bright";
-		temperature.innerHTML = " " + this.temperature.replace(".", this.config.decimalSymbol) + "&deg;" + degreeLabel;
+		temperature.innerHTML = " " + this.temperature.replace(".", this.config.decimalSymbol) + degreeLabel;
 		large.appendChild(temperature);
+   }
 
 		if (this.config.showIndoorTemperature && this.indoorTemperature) {
 			var indoorIcon = document.createElement("span");
@@ -254,7 +278,7 @@ Module.register("MMM-OpenmapWeather",{
 
 			var indoorTemperatureElem = document.createElement("span");
 			indoorTemperatureElem.className = "bright";
-			indoorTemperatureElem.innerHTML = " " + this.indoorTemperature.replace(".", this.config.decimalSymbol) + "&deg;" + degreeLabel;
+			indoorTemperatureElem.innerHTML = " " + this.indoorTemperature.replace(".", this.config.decimalSymbol) + degreeLabel;
 			large.appendChild(indoorTemperatureElem);
 		}
 
@@ -277,7 +301,9 @@ Module.register("MMM-OpenmapWeather",{
 
 			var feelsLike = document.createElement("span");
 			feelsLike.className = "dimmed";
-			feelsLike.innerHTML = this.translate("FEELS") + " " + this.feelsLike + "&deg;" + degreeLabel;
+			feelsLike.innerHTML = this.translate("FEELS", {
+				DEGREE: this.feelsLike + degreeLabel
+			});
 			small.appendChild(feelsLike);
 
 			wrapper.appendChild(small);
@@ -288,11 +314,16 @@ Module.register("MMM-OpenmapWeather",{
 
 	// Override getHeader method.
 	getHeader: function() {
-		if (this.config.appendLocationNameToHeader && this.data.header !== undefined) {
-			return this.data.header + " " + this.fetchedLocationName;
+	if (this.config.useLocationAsHeader && this.config.location !== false) {
+			return this.config.location;
+   }
+
+		if (this.config.appendLocationNameToHeader) {
+			if (this.data.header) return this.data.header + " " + this.fetchedLocationName;
+			else return this.fetchedLocationName;
 		}
 
-		return this.data.header;
+		return this.data.header ? this.data.header : "";
 	},
 
 	// Override notification handler.
@@ -376,7 +407,7 @@ Module.register("MMM-OpenmapWeather",{
 		} else if(this.config.location) {
 			params += "q=" + this.config.location;
 		} else if (this.firstEvent && this.firstEvent.geo) {
-			params += "lat=" + this.firstEvent.geo.lat + "&lon=" + this.firstEvent.geo.lon
+			params += "lat=" + this.firstEvent.geo.lat + "&lon=" + this.firstEvent.geo.lon;
 		} else if (this.firstEvent && this.firstEvent.location) {
 			params += "q=" + this.firstEvent.location;
 		} else {
@@ -406,6 +437,7 @@ Module.register("MMM-OpenmapWeather",{
 
 		this.humidity = parseFloat(data.main.humidity);
 		this.temperature = this.roundValue(data.main.temp);
+									   
 		this.feelsLike = 0;
 		this.fetchedLocationName=data.name+','+data.sys.country;
 		if (this.config.useBeaufort){
@@ -421,8 +453,10 @@ Module.register("MMM-OpenmapWeather",{
 
 		var tempInF = 0;
 		switch (this.config.units){
+				 
 		case "metric": tempInF = 1.8 * this.temperature + 32;
 			break;
+				   
 		case "imperial": tempInF = this.temperature;
 			break;
 		case "default":
@@ -438,8 +472,10 @@ Module.register("MMM-OpenmapWeather",{
 			// this.feelsLike = windChillInC.toFixed(0);
 
 			switch (this.config.units){
+				  
 			case "metric": this.feelsLike = windChillInC.toFixed(0);
 				break;
+					
 			case "imperial": this.feelsLike = windChillInF.toFixed(0);
 				break;
 			case "default":
@@ -450,7 +486,11 @@ Module.register("MMM-OpenmapWeather",{
 
 		} else if (tempInF > 80 && this.humidity > 40){
 			// heat index
+			   
+			 
+						  
 			var Hindex = -42.379 + 2.04901523*tempInF + 10.14333127*this.humidity
+										  
 				- 0.22475541*tempInF*this.humidity - 6.83783*Math.pow(10,-3)*tempInF*tempInF
 				- 5.481717*Math.pow(10,-2)*this.humidity*this.humidity
 				+ 1.22874*Math.pow(10,-3)*tempInF*tempInF*this.humidity
@@ -458,8 +498,10 @@ Module.register("MMM-OpenmapWeather",{
 				- 1.99*Math.pow(10,-6)*tempInF*tempInF*this.humidity*this.humidity;
 
 			switch (this.config.units){
+				  
 			case "metric": this.feelsLike = parseFloat((Hindex - 32) / 1.8).toFixed(0);
 				break;
+					
 			case "imperial": this.feelsLike = Hindex.toFixed(0);
 				break;
 			case "default":
@@ -510,6 +552,7 @@ Module.register("MMM-OpenmapWeather",{
 		this.loaded = true;
 		this.updateDom(this.config.animationSpeed);
 		this.sendNotification("CURRENTWEATHER_DATA", {data: data});
+		this.sendNotification("CURRENTWEATHER_TYPE", { type: this.config.iconTable[data.weather[0].icon].replace("-", "_") });																				
 	},
 
 	/* scheduleUpdate()
@@ -595,9 +638,9 @@ Module.register("MMM-OpenmapWeather",{
 	 *
 	 * return string - Rounded Temperature.
 	 */
-	roundValue: function(temperature) {
+	roundValue: function (temperature) {
 		var decimals = this.config.roundTemp ? 0 : 1;
-		return parseFloat(temperature).toFixed(decimals);
+		var roundValue = parseFloat(temperature).toFixed(decimals);
+		return roundValue === "-0" ? 0 : roundValue;
 	}
-
 });
