@@ -1,5 +1,5 @@
 # Module: MMM-OpenmapWeather
-This module is an updated version with appropriate image to display current weather condition using Openmap weather API.
+This module is an updated version with appropriate image to display current weather condition using OpenWeatherMap API.
 This module displays the current weather, including the windspeed, the sunset or sunrise time, the temperature and an color icon as image to display the current conditions.
 
 Note: MMM-OpenmapWeather is a modified version of the default `currentweather` module.
