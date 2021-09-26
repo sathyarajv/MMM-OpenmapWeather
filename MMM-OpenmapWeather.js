@@ -138,6 +138,8 @@ Module.register("MMM-OpenmapWeather",{
 		this.weatherType = null;
 		this.feelsLike = null;
 		this.loaded = false;
+		this.dewpoint = null;
+		this.pressure = null;
 		this.scheduleUpdate(this.config.initialLoadDelay);
 
 	},
@@ -308,7 +310,20 @@ Module.register("MMM-OpenmapWeather",{
 
 			wrapper.appendChild(small);
 		}
+		//dewpoint & pressure
+		var small1 = document.createElement("div");
+		small1.className = "normal small";
 
+		var dewpoint = document.createElement("span");
+		dewpoint.className = "dimmed";
+		dewpoint.innerHTML = "Dew point: "+this.dewpoint + degreeLabel;
+		small1.appendChild(dewpoint);
+
+		wrapper.appendChild(small1);
+		var pressure = document.createElement("span");
+		pressure.className = "dimmed";
+		pressure.innerHTML = "|  Pressure: "+this.pressure + "hPa";
+		small1.appendChild(pressure);
 		return wrapper;
 	},
 
@@ -371,13 +386,28 @@ Module.register("MMM-OpenmapWeather",{
 		var url = this.config.apiBase + this.config.apiVersion + "/" + this.config.weatherEndpoint + this.getParams();
 		var self = this;
 		var retry = true;
-
+					
 		var weatherRequest = new XMLHttpRequest();
 		weatherRequest.open("GET", url, true);
 		weatherRequest.onreadystatechange = function() {
 			if (this.readyState === 4) {
 				if (this.status === 200) {
-					self.processWeather(JSON.parse(this.response));
+					var response = JSON.parse(this.response);
+					self.processWeather(response);
+					var oneapicallurl=self.config.apiBase + self.config.apiVersion +"/onecall?lat="+response.coord.lat+"&lon="+response.coord.lon+"&exclude=minutely,hourly,daily,alerts&units=" + self.config.units+"&appid="+self.config.appid;
+					var weatherRequest1 = new XMLHttpRequest();
+					weatherRequest1.open("GET", oneapicallurl, true);
+					weatherRequest1.onreadystatechange = function() {
+						if (this.readyState === 4) {
+							if (this.status === 200) {
+								var allresponse = JSON.parse(this.response);
+								self.dewpoint= allresponse.current.dew_point;
+								self.pressure= allresponse.current.pressure 
+								self.updateDom(self.config.animationSpeed);
+							}
+						}
+					};
+					weatherRequest1.send();
 				} else if (this.status === 401) {
 					self.updateDom(self.config.animationSpeed);
 
