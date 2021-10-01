@@ -72,4 +72,6 @@ The following properties can be configured:
 | `calendarClass`              | The class for the calender module to base the event based weather information on. <br><br> **Default value:**  `'calendar'`
 | `iconTable`                  | The conversion table to convert the weather conditions to weather-icons. <br><br> **Default value:**  view tabel below.
 | `colorIcon`                  | If set to `true`, then the current weather displayed as color image else it will display as an icon. <br><br> **Default value:** `false`
+| `showDewpoint`               | Show the Air DewPoint <br><br> **Possible values:** `true` or `false` <br> **Default value:** `false`
+| `showPressure`               | Show the Atmospheric Pressure <br><br> **Possible values:** `true` or `false` <br> **Default value:** `false`
 
