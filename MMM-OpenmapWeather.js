@@ -34,6 +34,8 @@ Module.register("MMM-OpenmapWeather",{
 		showIndoorTemperature: false,
 		showIndoorHumidity: false,
 		showFeelsLike: true,
+		showDewpoint: false,
+		showPressure: false,
 
 		initialLoadDelay: 0, // 0 seconds delay
 		retryDelay: 2500,
@@ -225,7 +227,7 @@ Module.register("MMM-OpenmapWeather",{
 		}
 
 		var large = document.createElement("div");
-		large.className = "large light";
+		large.className = "light";
 
 		
 		var degreeLabel = "";
@@ -262,6 +264,7 @@ Module.register("MMM-OpenmapWeather",{
 													
 									
 																										
+								  
 								  
 		}
 		weatherIcon.classList.add("currentWeatherIconWrapper");
@@ -310,20 +313,25 @@ Module.register("MMM-OpenmapWeather",{
 
 			wrapper.appendChild(small);
 		}
-		//dewpoint & pressure
-		var small1 = document.createElement("div");
-		small1.className = "normal small";
-
-		var dewpoint = document.createElement("span");
-		dewpoint.className = "dimmed";
-		dewpoint.innerHTML = "Dew point: "+this.dewpoint + degreeLabel;
-		small1.appendChild(dewpoint);
-
-		wrapper.appendChild(small1);
-		var pressure = document.createElement("span");
-		pressure.className = "dimmed";
-		pressure.innerHTML = "|  Pressure: "+this.pressure + "hPa";
-		small1.appendChild(pressure);
+		if(this.config.showDewpoint || this.config.showPressure){
+		    var small1 = document.createElement("div");
+			//dewpoint
+		    if(this.config.showDewpoint){
+			small1.className = "normal small";
+			var dewpoint = document.createElement("span");
+			dewpoint.className = "dimmed";
+			dewpoint.innerHTML = "Dew point: "+this.dewpoint + degreeLabel;
+			small1.appendChild(dewpoint);
+			}
+			//pressure
+			if(this.config.showPressure){
+			var pressure = document.createElement("span");
+			pressure.className = "dimmed";
+			pressure.innerHTML = "  Pressure: "+this.pressure + "hPa";
+			small1.appendChild(pressure);
+			}
+			wrapper.appendChild(small1);
+	    }
 		return wrapper;
 	},
 
@@ -394,20 +402,22 @@ Module.register("MMM-OpenmapWeather",{
 				if (this.status === 200) {
 					var response = JSON.parse(this.response);
 					self.processWeather(response);
-					var oneapicallurl=self.config.apiBase + self.config.apiVersion +"/onecall?lat="+response.coord.lat+"&lon="+response.coord.lon+"&exclude=minutely,hourly,daily,alerts&units=" + self.config.units+"&appid="+self.config.appid;
-					var weatherRequest1 = new XMLHttpRequest();
-					weatherRequest1.open("GET", oneapicallurl, true);
-					weatherRequest1.onreadystatechange = function() {
-						if (this.readyState === 4) {
-							if (this.status === 200) {
-								var allresponse = JSON.parse(this.response);
-								self.dewpoint= allresponse.current.dew_point;
-								self.pressure= allresponse.current.pressure 
-								self.updateDom(self.config.animationSpeed);
+					if(self.config.showDewpoint || self.config.showPressure){
+						var oneapicallurl=self.config.apiBase + self.config.apiVersion +"/onecall?lat="+response.coord.lat+"&lon="+response.coord.lon+"&exclude=minutely,hourly,daily,alerts&units=" + self.config.units+"&appid="+self.config.appid;
+						var weatherRequest1 = new XMLHttpRequest();
+						weatherRequest1.open("GET", oneapicallurl, true);
+						weatherRequest1.onreadystatechange = function() {
+							if (this.readyState === 4) {
+								if (this.status === 200) {
+									var allresponse = JSON.parse(this.response);
+									self.dewpoint= allresponse.current.dew_point;
+									self.pressure= allresponse.current.pressure 
+									self.updateDom(self.config.animationSpeed);
+								}
 							}
-						}
-					};
-					weatherRequest1.send();
+						};
+						weatherRequest1.send();
+				    }
 				} else if (this.status === 401) {
 					self.updateDom(self.config.animationSpeed);
 
@@ -458,8 +468,8 @@ Module.register("MMM-OpenmapWeather",{
 	 * argument data object - Weather information received form openweather.org.
 	 */
 	processWeather: function(data) {
-
-		if (!data || !data.main || typeof data.main.temp === "undefined") {
+	
+	if (!data || !data.main || typeof data.main.temp === "undefined") {
 			// Did not receive usable new data.
 			// Maybe this needs a better check?
 			return;
@@ -467,10 +477,10 @@ Module.register("MMM-OpenmapWeather",{
 
 		this.humidity = parseFloat(data.main.humidity);
 		this.temperature = this.roundValue(data.main.temp);
-									   
+		this.fetchedLocationName = data.name;
 		this.feelsLike = 0;
-		this.fetchedLocationName=data.name+','+data.sys.country;
-		if (this.config.useBeaufort){
+
+		if (this.config.useBeaufort) {
 			this.windSpeed = this.ms2Beaufort(this.roundValue(data.wind.speed));
 		} else if (this.config.useKMPHwind) {
 			this.windSpeed = parseFloat((data.wind.speed * 60 * 60) / 1000).toFixed(0);
@@ -482,46 +492,52 @@ Module.register("MMM-OpenmapWeather",{
 		var windInMph = parseFloat(data.wind.speed * 2.23694);
 
 		var tempInF = 0;
-		switch (this.config.units){
-				 
-		case "metric": tempInF = 1.8 * this.temperature + 32;
-			break;
-				   
-		case "imperial": tempInF = this.temperature;
-			break;
-		case "default":
-			var tc = this.temperature - 273.15;
-			tempInF = 1.8 * tc + 32;
-			break;
-		}
-
-		if (windInMph > 3 && tempInF < 50){
-			// windchill
-			var windChillInF = Math.round(35.74+0.6215*tempInF-35.75*Math.pow(windInMph,0.16)+0.4275*tempInF*Math.pow(windInMph,0.16));
-			var windChillInC = (windChillInF - 32) * (5/9);
-			// this.feelsLike = windChillInC.toFixed(0);
-
-			switch (this.config.units){
-				  
-			case "metric": this.feelsLike = windChillInC.toFixed(0);
+		switch (this.config.units) {
+			case "metric":
+				tempInF = 1.8 * this.temperature + 32;
 				break;
-					
-			case "imperial": this.feelsLike = windChillInF.toFixed(0);
+			case "imperial":
+				tempInF = this.temperature;
 				break;
 			case "default":
-				var tc = windChillInC + 273.15;
-				this.feelsLike = tc.toFixed(0);
+				tempInF = 1.8 * (this.temperature - 273.15) + 32;
+						   
 				break;
+		}
+
+			if (windInMph > 3 && tempInF < 50) {
+			// windchill
+			var windChillInF = Math.round(35.74 + 0.6215 * tempInF - 35.75 * Math.pow(windInMph, 0.16) + 0.4275 * tempInF * Math.pow(windInMph, 0.16));
+			var windChillInC = (windChillInF - 32) * (5 / 9);
+			// this.feelsLike = windChillInC.toFixed(0);
+
+			
+			switch (this.config.units) {
+	  
+				case "metric":
+					this.feelsLike = windChillInC.toFixed(0);
+					break;
+	 
+				case "imperial":
+					this.feelsLike = windChillInF.toFixed(0);
+					break;
+				case "default":
+					this.feelsLike = (windChillInC + 273.15).toFixed(0);
+								   
+					break;
 			}
 
-		} else if (tempInF > 80 && this.humidity > 40){
+		} else if (tempInF > 80 && this.humidity > 40) {
 			// heat index
 			   
 			 
 						  
 			var Hindex = -42.379 + 2.04901523*tempInF + 10.14333127*this.humidity
 										  
+						  
+								 
 				- 0.22475541*tempInF*this.humidity - 6.83783*Math.pow(10,-3)*tempInF*tempInF
+													
 				- 5.481717*Math.pow(10,-2)*this.humidity*this.humidity
 				+ 1.22874*Math.pow(10,-3)*tempInF*tempInF*this.humidity
 				+ 8.5282*Math.pow(10,-4)*tempInF*this.humidity*this.humidity
@@ -530,9 +546,11 @@ Module.register("MMM-OpenmapWeather",{
 			switch (this.config.units){
 				  
 			case "metric": this.feelsLike = parseFloat((Hindex - 32) / 1.8).toFixed(0);
+																 
 				break;
 					
 			case "imperial": this.feelsLike = Hindex.toFixed(0);
+										
 				break;
 			case "default":
 				var tc = parseFloat((Hindex - 32) / 1.8) + 273.15;
@@ -614,12 +632,11 @@ Module.register("MMM-OpenmapWeather",{
 	 * return number - Windspeed in beaufort.
 	 */
 	ms2Beaufort: function(ms) {
-		var kmh = ms * 60 * 60 / 1000;
-		var speeds = [1, 5, 11, 19, 28, 38, 49, 61, 74, 88, 102, 117, 1000];
-		for (var beaufort in speeds) {
-			var speed = speeds[beaufort];
-			if (speed > kmh) {
-				return beaufort;
+		const windInKmh = this.windUnits === "imperial" ? ms * 1.609344 : this.useKmh ? ms : (ms * 60 * 60) / 1000;
+		const speeds = [1, 5, 11, 19, 28, 38, 49, 61, 74, 88, 102, 117, 1000];
+		for (const [index, speed] of speeds.entries()) {
+			if (speed > windInKmh) {
+				return index;
 			}
 		}
 		return 12;
